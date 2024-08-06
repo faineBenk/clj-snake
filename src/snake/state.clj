@@ -6,7 +6,7 @@
             [snake.keys :as keys]
             [snake.constants :as const]
             [snake.helpers :as h]
-            ))
+            [snake.rendering :as rd]))
 
 (use 'clojure.pprint)
 (defn print-state [state]
@@ -14,7 +14,8 @@
 
 (defn update-state [state]
  (log/info "Current state before update:" state)
-  (let [updated (-> state snake/move-snake apple/generate)]
+  ;; apple/generate should be part of update-snake-after-eat
+  (let [updated (-> state  snake/move-snake snake/rebuild-snake-body)]
     (log/info "Current state after update:" updated)
     updated))
 
@@ -22,7 +23,7 @@
     (Raylib/BeginDrawing)
     (do
       (Raylib/ClearBackground Jaylib/RAYWHITE)
-      (Raylib/DrawCircle (h/get-x-in-first-posn state) (h/get-y-in-first-posn state) 10 Jaylib/VIOLET)
+      (rd/draw-init-snake state)
       (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 10 Jaylib/RED)
       (Raylib/DrawFPS 20, 20))
     (Raylib/EndDrawing))
@@ -34,4 +35,5 @@
     ;; 3) (render new-state)
     (let* [new-state (-> old-state keys/handle-keys update-state)]
       (render-state new-state)
+      (println "----------SNAKE STEP----------")
       (recur new-state))))

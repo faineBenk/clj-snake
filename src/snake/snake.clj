@@ -18,21 +18,22 @@
                              :y (get-in last-posn [:y])})]
         (generate-init-snake new-sp (- n 1)))))
 
+; expands snake-posns according to init snake-head and init snake-body
+(defn update-init-snake
+  [state]
+  (assoc-in state [:snake-posns]
+            (generate-init-snake
+             (state :snake-posns)
+   (h/sfirst (state :snake-body)))))
+
 ; [[:right 4] [:left 2]] -> [:right :right :right :right :left :left]
 (defn expand-dir-list
   [sdir n]
   (repeat n sdir))
 
-;; concat = foldr (\x acc -> x:acc) [4, 5, 6] [1, 2, 3]
-;; foldr concat [] listOfLists
 (defn expand-dirs-list
   [sd]
   (vec (reduce concat (map (fn [[dir n]] (expand-dir-list dir n)) sd))))
-
-
-;; (def sd [[:right 2] [:up 1]])
-
-;;(def sp [{:x 20 :y 40} {:x 40 :y 40} {:x 20 :y 60}])
 
 ; gets snake-dir and snake-posn of segment, updates segment velocity
 ; (update-velocity :left {:x 20 :y 40})
@@ -44,7 +45,46 @@
     (= sdir :up)    {:x (:x sposn) :y (- (:y sposn) unit-length)}
     (= sdir :down)  {:x (:x sposn) :y (+ (:y sposn) unit-length)}))
 
+;; snake-body -> snake-body
+;; (- every value in snake-body map 1)
+(defn decrease-tail-directions
+  [sd]
+  (map (fn [x] (- (second x) 1)) sd))
 
+(defn increase-first
+  [[dir amount]]
+  [dir (+ amount 1)])
+
+(defn update-last
+  [[dir amount]]
+  [dir (- amount 1)])
+
+;; [[:up 1] [:right 4] [:down 2]] -> [[:up 2] [:right 4] [:down 1]]
+(defn update-directions
+  [sd]
+  (concat
+   (vector (increase-first (first sd)))
+   (butlast (rest sd))
+   (vector (update-last (last sd)))))
+
+;; (h/update-vector sd (increase-first-direction (first sd))) [:up 2]
+
+;; (increase-first-direction (first sd))
+
+;; (update-irections sd)
+
+
+;; direction -> snake-body
+;; when dir changed (i.e, by key press), add this dir to list of snake directions
+(defn insert-direction
+  [d sd]
+  (cond (= d "down")
+        (concat (vector [:down 1]) (butlast sd) (vector (update-last (last sd))))))
+                                           ;; take snake-body, decrease amount of segments in every direction,
+                                           ;; add 1 down segment to result
+        ;(= d "left")  (cons [:left 1] (update-tail-directions (rest sd)))
+        ;(= d "right") (cons [:right 1] (update-tail-directions (rest sd)))
+        ;(= d "up")  (cons [:up 1] (update-tail-directions (rest sd)))))
 
 ; snake-dir -> snake-posns
 ; gets snake-dirs and snake-posns, updates every segment in snake-posns
@@ -55,12 +95,10 @@
 
 (defn move-snake
   [state]
-    (assoc state :snake-posns (map-direction-to-velocity   (:snake-body   state)
+    (assoc state :snake-posns (map-direction-to-velocity   (:snake-body  state)
                                                            (:snake-posns state))))
 
-;(println (move-snake const/init-game-state))
-
-(defn change-snake-direction
+(defn change-snake-velocity
   [d]
   (cond (= d "down")  {:x 0   :y -20}
         (= d "left")  {:x -20 :y 0}
@@ -76,25 +114,31 @@
     (= sdir :down) {:x ac-x :y (- ac-y 20)}
     ))
 
-;;(get-in const/init-game-state [:apple-posns :x])
-
-(defn increase-snake-head
+;; snake-direction -> snake-direction
+;; increase snake body on 1 after apple eaten
+(defn increase-head-after-eat
   [sd]
   (conj [(ffirst sd) (inc (h/sfirst sd))]
         (rest sd)))
 
-;;(increase-snake-head (get-in const/init-game-state [:snake-body]))
+;; (increase-snake-head (get-in const/init-game-state [:snake-body]))
+
+;; state -> state
+;; rebuild body after every move.
+;; [[:down 1] [:right 4]] -> [[:down 2] [:right 3]]
+(defn rebuild-snake-body
+  [state]
+  ;; rebuild ends when snake fully rebuilt to current snake-dir
+  (let [sd (get-in state [:snake-body])]
+    (if (not (= (h/sfirst sd) (h/sum-of-values-in-map sd)))
+    (update-directions sd)
+    sd)))
+
+(rebuild-snake-body [[:left 5] [:down 1] [:right 4]])
 
 (defn update-snake-after-eat
   [state]
     (-> state
         (update :devoured inc) ; +
         (assoc :apple-posns (get-in (apple/generate state) [:apple-posns])) ; +
-        (update :snake-body increase-snake-head))) ; +
-        ;(update add-apple-to-snake sdir ac-x ac-y)))
-
-;;(get-in (apple/generate const/init-game-state) [:apple-posns])
-
-
-;;(update-snake-after-eat const/equal-head-apple-game-state)
-;(use 'snake.snake :reload)
+        (update :snake-body increase-head-after-eat))) ; +

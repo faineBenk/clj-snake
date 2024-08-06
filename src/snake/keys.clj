@@ -1,6 +1,7 @@
 (ns snake.keys
   (:import (com.raylib Jaylib Raylib))
-  (:require [snake.snake :as snake]))
+  (:require [snake.snake :as snake]
+            [snake.constants :as const]))
 
 (defn update-last-key
   [last-key]
@@ -11,16 +12,22 @@
 
 (defn handle-keys
   [state]
-  (let [last-key (:last-key state)]
+  (let [last-key (:last-key state)
+        sd (:snake-body state)
+        dir (:snake-dir state)]
     (update-last-key last-key)
-    (cond
+    (let [new-state (cond
       ;(let [new-state (assoc state :snake-dir "down")]
-      (= @last-key 83) (assoc state :snake-vel (snake/change-snake-direction "down")
-                                    :snake-dir "down")
-      (= @last-key 87) (assoc state :snake-vel (snake/change-snake-direction "up")
+
+      (and (= @last-key 83) (not (= dir "down"))) (assoc state :snake-vel (snake/change-snake-velocity "down")
+                                    :snake-dir "down"
+                                    :snake-body (snake/insert-direction "down" sd))
+      (= @last-key 87) (assoc state :snake-vel (snake/change-snake-velocity "up")
                                     :snake-dir "up")
-      (= @last-key 68) (assoc state :snake-vel (snake/change-snake-direction "right")
+      (= @last-key 68) (assoc state :snake-vel (snake/change-snake-velocity "right")
                                     :snake-dir "right")
-      (= @last-key 65) (assoc state :snake-vel (snake/change-snake-direction "left")
+      (= @last-key 65) (assoc state :snake-vel (snake/change-snake-velocity "left")
                                     :snake-dir "left")
-      :else state)))
+      :else state)]
+    (reset! last-key nil)
+    new-state)))
