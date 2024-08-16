@@ -17,7 +17,7 @@
    :devoured 0                ; amount of apples eaten
    :last-key (atom 0)         ; last pressed key
    :snake-dir :right         ; (head snake) direction
-   :snake-body [[:right 4]]}) ; snake directions
+   :snake-body '([:right 4])}) ; snake directions
 
 ; is-eaten? == true
 (def equal-head-apple-game-state

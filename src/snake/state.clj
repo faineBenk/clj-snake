@@ -15,7 +15,10 @@
 (defn update-state [state]
  (log/info "Current state before update:" state)
   ;; apple/generate should be part of update-snake-after-eat
-  (let [updated (-> state  snake/move-snake snake/rebuild-snake-body)]
+  (let [updated (-> state
+                    snake/move-snake
+                    snake/update-snake-after-eat
+                    snake/rebuild-snake-body )]
     (log/info "Current state after update:" updated)
     updated))
 
@@ -37,3 +40,5 @@
       (render-state new-state)
       (println "----------SNAKE STEP----------")
       (recur new-state))))
+
+(concat (butlast []))

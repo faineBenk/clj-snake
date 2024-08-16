@@ -19,15 +19,20 @@
     (let [new-state (cond
       ;(let [new-state (assoc state :snake-dir "down")]
 
-      (and (= @last-key 83) (not (= dir "down"))) (assoc state :snake-vel (snake/change-snake-velocity "down")
+      (and (= @last-key 83) (not (= dir "down")))  (assoc state :snake-vel (snake/change-snake-velocity "down")
                                     :snake-dir "down"
                                     :snake-body (snake/insert-direction "down" sd))
-      (= @last-key 87) (assoc state :snake-vel (snake/change-snake-velocity "up")
-                                    :snake-dir "up")
-      (= @last-key 68) (assoc state :snake-vel (snake/change-snake-velocity "right")
-                                    :snake-dir "right")
-      (= @last-key 65) (assoc state :snake-vel (snake/change-snake-velocity "left")
-                                    :snake-dir "left")
+      (and (= @last-key 87) (not (= dir "up")))    (assoc state :snake-vel (snake/change-snake-velocity "up")
+                                    :snake-dir "up"
+                                    :snake-body (snake/insert-direction "up" sd))
+      (and (= @last-key 68) (not (= dir "right"))) (assoc state :snake-vel (snake/change-snake-velocity "right")
+                                    :snake-dir "right"
+                                    :snake-body (snake/insert-direction "right" sd))
+      (and (= @last-key 65) (not (= dir "left")))  (assoc state :snake-vel (snake/change-snake-velocity "left")
+                                    :snake-dir "left"
+                                    :snake-body (snake/insert-direction "left" sd))
       :else state)]
+    ;; at the end of snake move resets last-key
+    ;; to prevent addition of direction at every move
     (reset! last-key nil)
     new-state)))

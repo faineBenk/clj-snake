@@ -51,40 +51,42 @@
   [sd]
   (map (fn [x] (- (second x) 1)) sd))
 
-(defn increase-first
+(defn increase-segments-amount
   [[dir amount]]
-  [dir (+ amount 1)])
+  [[dir (+ amount 1)]])
 
-(defn update-last
+(defn decrease-segments-amount
   [[dir amount]]
-  [dir (- amount 1)])
+  (if (> amount 1)
+    [[dir (- amount 1)]]
+    nil))
 
-;; [[:up 1] [:right 4] [:down 2]] -> [[:up 2] [:right 4] [:down 1]]
+;; [[:up 1] [:right 4] [:down 2]] -> [[:right 4] [:down 3]]
 (defn update-directions
   [sd]
-  (concat
-   (vector (increase-first (first sd)))
-   (butlast (rest sd))
-   (vector (update-last (last sd)))))
+    (concat
+      (decrease-segments-amount (first sd))
+      (butlast (rest sd))
+      (increase-segments-amount (last sd))))
 
-;; (h/update-vector sd (increase-first-direction (first sd))) [:up 2]
+(h/remove-if-zero [[:right 0] [:down 4]])
 
-;; (increase-first-direction (first sd))
-
-;; (update-irections sd)
-
+(update-directions [[:up 1] [:right 4] [:down 2]])
 
 ;; direction -> snake-body
 ;; when dir changed (i.e, by key press), add this dir to list of snake directions
 (defn insert-direction
   [d sd]
   (cond (= d "down")
-        (concat (vector [:down 1]) (butlast sd) (vector (update-last (last sd))))))
-                                           ;; take snake-body, decrease amount of segments in every direction,
-                                           ;; add 1 down segment to result
-        ;(= d "left")  (cons [:left 1] (update-tail-directions (rest sd)))
-        ;(= d "right") (cons [:right 1] (update-tail-directions (rest sd)))
-        ;(= d "up")  (cons [:up 1] (update-tail-directions (rest sd)))))
+                     ;; take snake-body, decrease amount of segments in last direction,
+                     ;; add 1 down segment to result
+                      (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:down 1]))
+        (= d "left")  (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:left 1]))
+        (= d "right") (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:right 1]))
+        (= d "up")    (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:up 1]))))
+
+
+(insert-direction "down" [[:right 0] [:down 4]])
 
 ; snake-dir -> snake-posns
 ; gets snake-dirs and snake-posns, updates every segment in snake-posns
@@ -114,31 +116,19 @@
     (= sdir :down) {:x ac-x :y (- ac-y 20)}
     ))
 
-;; snake-direction -> snake-direction
-;; increase snake body on 1 after apple eaten
-(defn increase-head-after-eat
-  [sd]
-  (conj [(ffirst sd) (inc (h/sfirst sd))]
-        (rest sd)))
-
-;; (increase-snake-head (get-in const/init-game-state [:snake-body]))
+;; (increase-head-after-eat [[:right 4] [:down 3] [:left 1]])
 
 ;; state -> state
 ;; rebuild body after every move.
-;; [[:down 1] [:right 4]] -> [[:down 2] [:right 3]]
+;; [[:down 1] [:right 4]] -> [[:right 5]]
 (defn rebuild-snake-body
   [state]
   ;; rebuild ends when snake fully rebuilt to current snake-dir
   (let [sd (get-in state [:snake-body])]
-    (if (not (= (h/sfirst sd) (h/sum-of-values-in-map sd)))
-    (update-directions sd)
-    sd)))
-
-(rebuild-snake-body [[:left 5] [:down 1] [:right 4]])
+    (if (not (= (h/slast sd) (h/sum-of-values-in-map sd)))
+    (assoc state :snake-body (update-directions sd))
+    state)))
 
 (defn update-snake-after-eat
   [state]
-    (-> state
-        (update :devoured inc) ; +
-        (assoc :apple-posns (get-in (apple/generate state) [:apple-posns])) ; +
-        (update :snake-body increase-head-after-eat))) ; +
+  (apple/generate state)) ; +

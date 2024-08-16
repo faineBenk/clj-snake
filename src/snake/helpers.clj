@@ -4,6 +4,14 @@
   [l]
   (second (first l)))
 
+(defn flast
+  [l]
+  (first (last l)))
+
+(defn slast
+  [l]
+  (second (last l)))
+
 (defn get-x-in-first-posn
   [state]
   (get-in (-> state
@@ -24,12 +32,11 @@
            [dir new-val])
         v-old v-with-updated))
 
-;; core analog?
 (defn sum-of-values-in-map
   [m]
   (reduce + (map (fn [x] (second x)) m)))
 
-;; [[:left 6] [:down 0] :right 3]] -> [[:left 6] [:right 3]]
 (defn remove-if-zero
   [v]
-  nil)
+  (filter #(not (zero? (second %))) v))
+
