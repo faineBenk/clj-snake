@@ -1,10 +1,11 @@
 (ns snake.snake
   (:require [snake.constants :as const])
   (:require [snake.helpers :as h])
-  (:require [snake.apple :as apple])
-  (:require [clojure.pprint :as p]))
+  (:require [snake.apple :as apple]))
 
-(def unit-length (* 20 const/tick))
+;(def unit-length (* 20 const/tick))
+(def unit-length 20)
+
 
 ; (generate-init-snake
 ;            (get-in  state [:snake-posns])         ; snake with only head
@@ -69,10 +70,6 @@
       (butlast (rest sd))
       (increase-segments-amount (last sd))))
 
-(h/remove-if-zero [[:right 0] [:down 4]])
-
-(update-directions [[:up 1] [:right 4] [:down 2]])
-
 ;; direction -> snake-body
 ;; when dir changed (i.e, by key press), add this dir to list of snake directions
 (defn insert-direction
@@ -88,6 +85,11 @@
 
 (insert-direction "down" [[:right 0] [:down 4]])
 
+(def conflicting-posns '({:x 60, :y 100} {:x 80, :y 100} {:x 100, :y 100} {:x 100, :y 80} {:x 100, :y 60} {:x 100 :y 80}))
+(defn is-segment-conflict?
+  [sp]
+  (= '() (filter #(= (last sp) %) (butlast sp))))
+
 ; snake-dir -> snake-posns
 ; gets snake-dirs and snake-posns, updates every segment in snake-posns
 ; map-direction-to-velocity (expand-dir-list sd) snake-posns
@@ -97,7 +99,7 @@
 
 (defn move-snake
   [state]
-    (assoc state :snake-posns (map-direction-to-velocity   (:snake-body  state)
+      (assoc state :snake-posns (map-direction-to-velocity   (:snake-body  state)
                                                            (:snake-posns state))))
 
 (defn change-snake-velocity
@@ -116,8 +118,6 @@
     (= sdir :down) {:x ac-x :y (- ac-y 20)}
     ))
 
-;; (increase-head-after-eat [[:right 4] [:down 3] [:left 1]])
-
 ;; state -> state
 ;; rebuild body after every move.
 ;; [[:down 1] [:right 4]] -> [[:right 5]]
@@ -131,4 +131,4 @@
 
 (defn update-snake-after-eat
   [state]
-  (apple/generate state)) ; +
+  (apple/generate state))

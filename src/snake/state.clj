@@ -17,15 +17,20 @@
   ;; apple/generate should be part of update-snake-after-eat
   (let [updated (-> state
                     snake/move-snake
+                    snake/rebuild-snake-body
                     snake/update-snake-after-eat
-                    snake/rebuild-snake-body )]
+                    )]
     (log/info "Current state after update:" updated)
     updated))
 
 (defn render-state [state]
     (Raylib/BeginDrawing)
     (do
-      (Raylib/ClearBackground Jaylib/RAYWHITE)
+      (Raylib/ClearBackground Jaylib/DARKPURPLE)
+      (doseq [[x1 y1 x2 y2] (rd/mesh-points-to-vectors (rd/create-mesh-points-axis const/init-coordinates))]
+        (Raylib/DrawLine x1 y1 x2 y2
+              Jaylib/GRAY)
+        (Raylib/DrawLine y1 x1 y2 x2 Jaylib/GRAY))
       (rd/draw-init-snake state)
       (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 10 Jaylib/RED)
       (Raylib/DrawFPS 20, 20))

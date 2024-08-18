@@ -3,11 +3,23 @@
   (:require [snake.constants :as const])
   (:require [snake.helpers :as h]))
 
+(defn gonna-be-in-apple?
+  [state]
+  (let [dir (:snake-dir state)
+        {ax :x ay :y} (:apple-posns state)
+        {sx :x sy :y} (last (:snake-posns state))
+        [next-sx next-sy] (cond (= dir "down") [sx (+ sy 20)]
+                      (= dir "left") [(- sx 20) sy]
+                      (= dir "right") [(+ sx 20) sy]
+                      (= dir "up") [sx (- sy 20)])]
+    (= [next-sx next-sy] [ax ay])))
+
 (defn is-eaten?
   [state]
   (let [{sx :x sy :y} (last (:snake-posns state)) ;; snake head
         {ax :x ay :y} (:apple-posns state)]       ;; current apple position
     (= [sx sy] [ax ay])))
+    ;;(head-in-apple? [sx sy] [ax ay])))
 
 (defn gen-and-check-coord
   []
@@ -23,14 +35,7 @@
 ;; state -> snake-positions
 (defn add-apple-to-head
   [state]
-  (let [dir (get-in state [:snake-dir])
-        sp (get-in state [:snake-posns])
-        {ax :x ay :y} (:apple-posns state)]
-    (cond
-      (= dir "down")  (assoc state :snake-posns (concat sp (vector {:x ax :y (- ay 20)})))
-      (= dir "left")  (assoc state :snake-posns (concat sp (vector {:x (- ax 20) :y ay})))
-      (= dir "right") (assoc state :snake-posns (concat sp (vector {:x (+ ax 20) :y ay})))
-      (= dir "up")    (assoc state :snake-posns (concat sp (vector {:x ax :y (+ ay 20)}))))))
+  (assoc state :snake-posns (concat (:snake-posns state) (vector (:apple-posns state)))))
 
 ;; (add-apple-to-head const/init-game-state)
 
@@ -38,7 +43,7 @@
 
 (defn generate
   [state]
-  (if (is-eaten? state)
+  (if (gonna-be-in-apple? state)
       (let [new-apple-x (gen-and-check-coord)
             new-apple-y (gen-and-check-coord)]
       (-> state

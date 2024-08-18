@@ -1,6 +1,6 @@
 (ns snake.constants)
 
-(def fps 1)
+(def fps 5)
 
 (def tick (/ 1 fps))
 
@@ -9,6 +9,8 @@
 (def available-coord-step 15)
 
 (def main-window-scales {:width 300 :height 300})
+
+(def init-coordinates (repeat (/ (:width main-window-scales) 20) 20))
 
 (def init-game-state
   {:snake-posns [{:x 20 :y 40}]
