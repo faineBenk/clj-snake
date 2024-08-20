@@ -81,9 +81,6 @@
         (= d "right") (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:right 1]))
         (= d "up")    (concat (butlast sd) (decrease-segments-amount (last sd)) (vector [:up 1]))))
 
-
-(insert-direction "down" [[:right 0] [:down 4]])
-
 (def conflicting-posns '({:x 60, :y 100} {:x 80, :y 100} {:x 100, :y 100} {:x 100, :y 80} {:x 100, :y 60} {:x 100 :y 80}))
 (defn is-segment-conflict?
   [sp]
@@ -107,15 +104,6 @@
         (= d "left")  {:x -20 :y 0}
         (= d "right") {:x 20  :y 0}
         (= d "up")    {:x 0   :y 20}))
-
-(defn add-apple-to-snake
-  [sdir ac-x ac-y]
-  (cond
-    (= sdir :right) {:x (+ ac-x 20) :y ac-y}
-    (= sdir :left) {:x (- ac-x 20) :y ac-y}
-    (= sdir :up) {:x ac-x :y (+ ac-y 20)}
-    (= sdir :down) {:x ac-x :y (- ac-y 20)}
-    ))
 
 ;; state -> state
 ;; rebuild body after every move.

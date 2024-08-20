@@ -38,3 +38,7 @@
 (defn mesh-points-to-vectors
   [v]
   (cons [10 0 10 300] (map #(mesh-point-to-vector %) v)))
+
+(defn draw-pause
+  [w h]
+  (Raylib/InitWindow w h "snake-game-pause"))

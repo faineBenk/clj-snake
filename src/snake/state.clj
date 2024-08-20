@@ -10,23 +10,27 @@
             [snake.conflicts :as confl]))
 
 (use 'clojure.pprint)
-(defn print-state [state]
-  (pprint state))
 
-(defn update-state [state]
- (log/info "Current state before update:" state)
-  ;; apple/generate should be part of update-snake-after-eat
-  (let [updated (if (confl/gonna-stuck-wall? state)
-                   (assoc state :continue false)
-                   (-> state
-                             snake/move-snake
-                             snake/rebuild-snake-body
-                             snake/update-snake-after-eat))
-                    ]
-    (log/info "Current state after update:" updated)
-    updated))
+(defn print-state
+  [state]
+   (pprint state))
 
-(defn render-state [state]
+(defn update-state
+  [state]
+  (log/info "Current state before update:" state)
+      ;; apple/generate should be part of update-snake-after-eat
+    (let [updated (if (confl/gonna-stuck-wall? state)
+                    (assoc state :continue false)
+                    (-> state
+                              snake/move-snake
+                              snake/rebuild-snake-body
+                              snake/update-snake-after-eat))
+                      ]
+      (log/info "Current state after update:" updated)
+      updated))
+
+(defn render-state
+  [state]
     (Raylib/BeginDrawing)
     (do
       (Raylib/ClearBackground Jaylib/DARKPURPLE)
@@ -42,17 +46,25 @@
       (Raylib/DrawFPS 20, 20))
     (Raylib/EndDrawing))
 
-(defn game-loop [old-state]
-  (when (not (Raylib/WindowShouldClose))
-    ;; 1) (handle-keyboard)
-    ;; 2) (let [new-state (update-state old-state)]
-    ;; 3) (render new-state)
-    (let* [new-state (if (:continue old-state)
-                         (-> old-state keys/handle-keys update-state)
-                         (do
-                           ;; show score and menu buttons
-                           (println "----------GAME OVER----------")
-                           old-state))]
-      (render-state new-state)
-      (println "----------SNAKE STEP----------")
-      (recur new-state))))
+(defn pause
+  [old-state]
+  (rd/draw-pause (const/main-window-scales :width)
+                 (const/main-window-scales :height))
+  (Raylib/SetTargetFPS const/fps))
+
+(defn game-loop
+  [old-state]
+    (when (not (Raylib/WindowShouldClose))
+      ;; 1) (handle-keyboard)
+      ;; 2) (let [new-state (update-state old-state)]
+      ;; 3) (render new-state)
+      (let* [new-state (if (:continue old-state)
+                          (-> old-state keys/handle-keys update-state)
+                          (do
+                            ;; show pause menu
+                            (println "----------GAME OVER----------")
+                            pause))]
+        (render-state new-state)
+        (println "----------SNAKE STEP----------")
+        (recur new-state))))
+

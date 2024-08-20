@@ -20,7 +20,7 @@
    :apple-posns {:x 60 :y 60}
    :devoured 0                ; amount of apples eaten
    :last-key (atom 0)         ; last pressed key
-   :snake-dir :right         ; (head snake) direction
+   :snake-dir "right"         ; (head snake) direction
    :snake-body '([:right 4]) ; snake directions
    :border-offset {:start 5 :end 290}
    :continue true})
