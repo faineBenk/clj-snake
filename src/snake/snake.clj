@@ -6,7 +6,6 @@
 ;(def unit-length (* 20 const/tick))
 (def unit-length 20)
 
-
 ; (generate-init-snake
 ;            (get-in  state [:snake-posns])         ; snake with only head
 ;            (second (get-in state [:snake-body]))) ; amount of segments in initial snake

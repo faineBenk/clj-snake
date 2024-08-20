@@ -9,6 +9,17 @@
     (let [{:keys [x y]} posn]
     (Raylib/DrawCircle x y 10 Jaylib/PURPLE))))
 
+(defn draw-border
+  [x y w h]
+  (Raylib/DrawRectangle x y w h Jaylib/BEIGE))
+
+(defn draw-borders
+  [a1 a2 w h]
+  (draw-border a1 a1 w h)  ;; horizontal line up
+  (draw-border a1 a2 w h)  ;; horizontal line down
+  (draw-border a1 a1 h w)  ;; vertical line left
+  (draw-border a2 a1 h w)) ;; vertical line right
+
 ;; [20 40 60 80 100 .. 300]
 (defn increase-values
   [l acc len]
