@@ -1,5 +1,5 @@
 (ns snake.rendering
-  (:import (com.raylib Jaylib Raylib))
+  (:import (com.raylib Jaylib Jaylib$Color Raylib))
   (:require [snake.helpers :as h])
   (:require [snake.constants :as const]))
 
@@ -39,6 +39,34 @@
   [v]
   (cons [10 0 10 300] (map #(mesh-point-to-vector %) v)))
 
+(defn draw-continue
+  [state]
+    (Raylib/ClearBackground Jaylib/DARKPURPLE)
+    (doseq [[x1 y1 x2 y2] (mesh-points-to-vectors
+                          (create-mesh-points-axis const/init-coordinates-for-mesh))]
+      (Raylib/DrawLine x1 y1 x2 y2 Jaylib/GRAY)
+      (Raylib/DrawLine y1 x1 y2 x2 Jaylib/GRAY))
+    ;; draw-borders [offset-start offset-end [rectangle dimensions]]
+    (draw-borders 5 290 (:a1 const/border-dimensions)
+                            (:a2 const/border-dimensions))
+    (draw-init-snake state)
+    (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 5 Jaylib/RED)
+    (Raylib/DrawFPS 20, 20))
+
+(defn draw-menu
+  []
+  (Raylib/DrawRectangle 0 0 300 300 Jaylib/BLUE)
+  (Raylib/DrawText "new game" 120 130 20 Jaylib/LIGHTGRAY))
+
 (defn draw-pause
-  [w h]
-  (Raylib/InitWindow w h "snake-game-pause"))
+  [state]
+  (draw-continue state)
+  (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
+  (Raylib/DrawText "pause" 120 130 20 Jaylib/LIGHTGRAY))
+
+(defn draw-over
+  [state]
+  (draw-continue state)
+  (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
+  (Raylib/DrawText "game over" 100 130 20 Jaylib/LIGHTGRAY)
+  (Raylib/DrawText (str "score: " (:devoured state)) 100 150 20 Jaylib/YELLOW))

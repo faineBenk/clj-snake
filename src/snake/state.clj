@@ -17,40 +17,38 @@
 
 (defn update-state
   [state]
-  (log/info "Current state before update:" state)
-      ;; apple/generate should be part of update-snake-after-eat
-    (let [updated (if (confl/gonna-stuck-wall? state)
-                    (assoc state :continue false)
-                    (-> state
-                              snake/move-snake
-                              snake/rebuild-snake-body
-                              snake/update-snake-after-eat))
-                      ]
-      (log/info "Current state after update:" updated)
-      updated))
+  (let [current-state (:game-state state)]
+     (cond (= current-state "continue")
+         (let [updated (if (confl/gonna-stuck-wall? state)
+                      (assoc state :game-state "over")
+                      (do
+                        (println "----------SNAKE STEP----------")
+                        (log/info "Current state before update:" state)
+                        (-> state
+                                snake/move-snake
+                                snake/rebuild-snake-body
+                                snake/update-snake-after-eat)))]
+           (log/info "Current state after update:" updated)
+        updated)
+         (= current-state "pause")
+         state
+         (= current-state "over")
+         state
+         (= current-state "menu")
+         (do
+           (println "----------MENU----------")
+           (log/info "State in menu:" state)
+           state))))
 
 (defn render-state
   [state]
+  (let [current-state (:game-state state)]
     (Raylib/BeginDrawing)
-    (do
-      (Raylib/ClearBackground Jaylib/DARKPURPLE)
-      (doseq [[x1 y1 x2 y2] (rd/mesh-points-to-vectors
-                             (rd/create-mesh-points-axis const/init-coordinates-for-mesh))]
-        (Raylib/DrawLine x1 y1 x2 y2 Jaylib/GRAY)
-        (Raylib/DrawLine y1 x1 y2 x2 Jaylib/GRAY))
-      ;; draw-borders [offset-start offset-end [rectangle dimensions]]
-      (rd/draw-borders 5 290 (:a1 const/border-dimensions)
-                              (:a2 const/border-dimensions))
-      (rd/draw-init-snake state)
-      (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 5 Jaylib/RED)
-      (Raylib/DrawFPS 20, 20))
-    (Raylib/EndDrawing))
-
-(defn pause
-  [old-state]
-  (rd/draw-pause (const/main-window-scales :width)
-                 (const/main-window-scales :height))
-  (Raylib/SetTargetFPS const/fps))
+    (cond (= current-state "continue") (rd/draw-continue state)
+          (= current-state "pause") (rd/draw-pause state)
+          (= current-state "over") (rd/draw-over state)
+          (= current-state "menu") (rd/draw-menu))
+    (Raylib/EndDrawing)))
 
 (defn game-loop
   [old-state]
@@ -58,13 +56,6 @@
       ;; 1) (handle-keyboard)
       ;; 2) (let [new-state (update-state old-state)]
       ;; 3) (render new-state)
-      (let* [new-state (if (:continue old-state)
-                          (-> old-state keys/handle-keys update-state)
-                          (do
-                            ;; show pause menu
-                            (println "----------GAME OVER----------")
-                            pause))]
+      (let* [new-state (-> old-state keys/handle-keys keys/handle-buttons update-state)]
         (render-state new-state)
-        (println "----------SNAKE STEP----------")
         (recur new-state))))
-

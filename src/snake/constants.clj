@@ -23,4 +23,7 @@
    :snake-dir "right"         ; (head snake) direction
    :snake-body '([:right 4]) ; snake directions
    :border-offset {:start 5 :end 290}
-   :continue true})
+   :game-state "continue"})  ; start menu : "start"
+                             ; game is played : "continue"
+                             ; game is paused : "pause"
+                             ; game is over : "over"
