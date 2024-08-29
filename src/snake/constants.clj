@@ -8,7 +8,7 @@
 ; available-coord-step * 20 < InitWindow width
 (def available-coord-step 15)
 
-(def main-window-scales {:width 600 :height 600})
+(def main-window-scales {:width 300 :height 300})
 
 (def init-coordinates-for-mesh (repeat (/ (:width main-window-scales) 20) 20))
 
