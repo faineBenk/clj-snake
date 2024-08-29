@@ -24,20 +24,20 @@
         dir (:snake-dir state)
         game-state (:game-state state)]
     (update-last-key last-key)
-    (if @last-key (println (str "last key is " @last-key)))
+    ; (when @last-key (println (str "last key is " @last-key)))
     (let [new-state (cond
       ;(let [new-state (assoc state :snake-dir "down")]
 
-      (and (= @last-key 83) (not (= dir "down")))  (assoc state :snake-vel (snake/change-snake-velocity "down")
+      (and (= @last-key 83) (not (= dir "up")))  (assoc state :snake-vel (snake/change-snake-velocity "down")
                                     :snake-dir "down"
                                     :snake-body (snake/insert-direction "down" sd))
-      (and (= @last-key 87) (not (= dir "up")))    (assoc state :snake-vel (snake/change-snake-velocity "up")
+      (and (= @last-key 87) (not (= dir "down")))    (assoc state :snake-vel (snake/change-snake-velocity "up")
                                     :snake-dir "up"
                                     :snake-body (snake/insert-direction "up" sd))
-      (and (= @last-key 68) (not (= dir "right"))) (assoc state :snake-vel (snake/change-snake-velocity "right")
+      (and (= @last-key 68) (not (= dir "left"))) (assoc state :snake-vel (snake/change-snake-velocity "right")
                                     :snake-dir "right"
                                     :snake-body (snake/insert-direction "right" sd))
-      (and (= @last-key 65) (not (= dir "left")))  (assoc state :snake-vel (snake/change-snake-velocity "left")
+      (and (= @last-key 65) (not (= dir "right")))  (assoc state :snake-vel (snake/change-snake-velocity "left")
                                     :snake-dir "left"
                                     :snake-body (snake/insert-direction "left" sd))
       (= @last-key 32) (toggle-pause state)
@@ -47,15 +47,50 @@
     (reset! last-key nil)
     new-state)))
 
-(defn is-menu-pressed?
-  [state]
-  (let [game-state (:game-state state)]
-     (and (Raylib/IsMouseButtonPressed 0)
-          (not (= game-state "menu"))
-          (and (> (Raylib/GetMouseX) 20) (> (Raylib/GetMouseY) 250))
-    )))
+(defn button-area-active?
+  [button]
+    ;;(cond
+      ;; menu area
+  (let [b-x (:x button)
+        b-y (:y button)
+        b-w (:width button)
+        b-h (:height button)
+        m-x (Raylib/GetMouseX)
+        m-y (Raylib/GetMouseY)]
+      (and
+           (>= m-x b-x) (<= m-x (+ b-x b-w))
+           (>= m-y b-y) (<= m-y (+ b-y b-h)))))
+
+(defn button-hover
+  [buttons]
+  (some (fn [[b-name button]]
+          (when (button-area-active? button)
+            [b-name button]))
+        buttons))
+
+(defn falsify-hovers [state]
+  (assoc state :buttons (into {} (map (fn [[b-name button]] [b-name (assoc button :hover false)]) (:buttons state)))))
+
+(defn is-current-state-valid?
+  [game-state avail-states]
+  (some (fn [st] (= game-state st)) avail-states))
 
 (defn handle-buttons
   [state]
-  (cond (is-menu-pressed? state) (assoc state :game-state "menu")
-    :else state))
+  (let [state (falsify-hovers state)
+        buttons (:buttons state)
+        [b-name button] (button-hover buttons)
+        avail-states (:states button)
+        game-state (:game-state state)]
+  (if (is-current-state-valid? game-state avail-states)
+    (if (Raylib/IsMouseButtonPressed 0)
+      (cond
+        ;; menu
+        (= b-name "menu") (assoc state :game-state "menu")
+        ;; continue game
+        (= b-name "continue") (assoc state :game-state "continue")
+        ;; new game
+        (= b-name "new-game") (snake/update-init-snake const/init-game-state)
+        :else state)
+      (assoc-in state [:buttons b-name :hover] true))
+    state)))

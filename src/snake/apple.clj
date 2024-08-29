@@ -43,7 +43,6 @@
 
 (defn generate
   [state]
-  (if (gonna-be-in-apple? state)
       (let [new-apple-x (gen-and-check-coord)
             new-apple-y (gen-and-check-coord)]
       (-> state
@@ -51,5 +50,4 @@
           (add-apple-to-head)
           (assoc-in [:apple-posns :x] new-apple-x)
           (assoc-in  [:apple-posns :y] new-apple-y)
-          (update-in [:snake-body] increase-head-after-eat)))
-      state))
+          (update-in [:snake-body] increase-head-after-eat))))

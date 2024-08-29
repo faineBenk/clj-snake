@@ -53,20 +53,42 @@
     (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 5 Jaylib/RED)
     (Raylib/DrawFPS 20, 20))
 
-(defn draw-menu
+(defn draw-init-screen-buttons
   []
-  (Raylib/DrawRectangle 0 0 300 300 Jaylib/BLUE)
-  (Raylib/DrawText "new game" 120 130 20 Jaylib/LIGHTGRAY))
+  (Raylib/DrawRectangle 95 95 100 40 (Jaylib$Color. 110 100 150 200))
+  (Raylib/DrawText "new game" 100 105 20 Jaylib/LIGHTGRAY)
+  (Raylib/DrawRectangle 95 145 100 40 (Jaylib$Color. 110 100 150 200))
+  (Raylib/DrawText "continue" 100 155 20 Jaylib/LIGHTGRAY))
+
+(defn draw-init-screen
+  []
+    (Raylib/DrawRectangle 0 0 300 300 Jaylib/VIOLET)
+    (draw-init-screen-buttons))
+
+
+(defn draw-menu-button
+  []
+  (Raylib/DrawRectangle 25 240 55 40 (Jaylib$Color. 110 100 150 200))
+  (Raylib/DrawText "menu" 30 250 20 Jaylib/LIGHTGRAY))
+
+(defn draw-score
+  [state]
+  (Raylib/DrawText (str "score: " (:devoured state)) 100 150 20 Jaylib/YELLOW))
 
 (defn draw-pause
   [state]
   (draw-continue state)
   (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
-  (Raylib/DrawText "pause" 120 130 20 Jaylib/LIGHTGRAY))
+  (Raylib/DrawText "pause" 120 130 20 Jaylib/LIGHTGRAY)
+  (draw-score state)
+  (draw-menu-button))
 
 (defn draw-over
   [state]
   (draw-continue state)
   (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
   (Raylib/DrawText "game over" 100 130 20 Jaylib/LIGHTGRAY)
-  (Raylib/DrawText (str "score: " (:devoured state)) 100 150 20 Jaylib/YELLOW))
+  (draw-score state)
+  (draw-menu-button))
+
+;; buttons
