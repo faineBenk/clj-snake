@@ -51,7 +51,7 @@
     (cond (= current-state "continue") (rd/draw-continue state)
           (= current-state "pause") (rd/draw-pause state)
           (= current-state "over") (rd/draw-over state)
-          (= current-state "menu") (rd/draw-init-screen))
+          (= current-state "menu") (rd/draw-init-screen state))
     (Raylib/EndDrawing)))
 
 (defn inc-frames

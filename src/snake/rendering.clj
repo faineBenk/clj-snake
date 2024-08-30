@@ -3,6 +3,11 @@
   (:require [snake.helpers :as h])
   (:require [snake.constants :as const]))
 
+;; custom colors
+
+(def button-inactive-color (Jaylib$Color. 110 100 150 200))
+(def screen-semitransparent-color (Jaylib$Color. 60 50 150 100))
+
 (defn draw-init-snake
   [state]
   (doseq [posn (get-in state [:snake-posns])]
@@ -33,11 +38,12 @@
 ;; 20 -> [20 0 20 300]
 (defn mesh-point-to-vector
   [p]
-  [(+ p 10) 0 (+ p 10) 300])
+  ;; why 10?
+  [(+ p 10) 0 (+ p 10) (:width const/main-window-scales)])
 
 (defn mesh-points-to-vectors
   [v]
-  (cons [10 0 10 300] (map #(mesh-point-to-vector %) v)))
+  (cons [10 0 10 (:width const/main-window-scales)] (map #(mesh-point-to-vector %) v)))
 
 (defn draw-continue
   [state]
@@ -46,49 +52,61 @@
                           (create-mesh-points-axis const/init-coordinates-for-mesh))]
       (Raylib/DrawLine x1 y1 x2 y2 Jaylib/GRAY)
       (Raylib/DrawLine y1 x1 y2 x2 Jaylib/GRAY))
-    ;; draw-borders [offset-start offset-end [rectangle dimensions]]
-    (draw-borders 5 290 (:a1 const/border-dimensions)
-                            (:a2 const/border-dimensions))
+    ;; draw-borders [offset-start offset-end [rectangle size]]
+    (draw-borders const/border-init-x
+                  (- (:width const/main-window-scales) 10)
+                  (:a2 const/border-dimensions)
+                  (:a1 const/border-dimensions))
     (draw-init-snake state)
     (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 5 Jaylib/RED)
-    (Raylib/DrawFPS 20, 20))
+    (Raylib/DrawFPS 30, 30))
 
-(defn draw-init-screen-buttons
-  []
-  (Raylib/DrawRectangle 95 95 100 40 (Jaylib$Color. 110 100 150 200))
-  (Raylib/DrawText "new game" 100 105 20 Jaylib/LIGHTGRAY)
-  (Raylib/DrawRectangle 95 145 100 40 (Jaylib$Color. 110 100 150 200))
-  (Raylib/DrawText "continue" 100 155 20 Jaylib/LIGHTGRAY))
+(defn draw-button-text
+  [b-name {x :x y :y}]
+  (Raylib/DrawText b-name (+ x 5)
+                          (+ y (/ const/unit-length 2))
+                           const/text-width
+                           Jaylib/LIGHTGRAY))
+
+(defn draw-button
+  [state b-name {x :x y :y width :width height :height}]
+  (Raylib/DrawRectangle x y width height button-inactive-color)
+  (cond
+    (= b-name "menu") (draw-button-text "menu" (get-in state [:buttons "menu"]))
+    (= b-name "new-game") (draw-button-text "new game" (get-in state [:buttons "new-game"]))
+    (= b-name "continue") (draw-button-text "continue" (get-in state [:buttons "continue"]))))
 
 (defn draw-init-screen
-  []
-    (Raylib/DrawRectangle 0 0 300 300 Jaylib/VIOLET)
-    (draw-init-screen-buttons))
-
-
-(defn draw-menu-button
-  []
-  (Raylib/DrawRectangle 25 240 55 40 (Jaylib$Color. 110 100 150 200))
-  (Raylib/DrawText "menu" 30 250 20 Jaylib/LIGHTGRAY))
+  [state]
+    (Raylib/DrawRectangle 0 0 (:width const/main-window-scales)
+                              (:height const/main-window-scales) Jaylib/VIOLET)
+    (draw-button state "new-game" (get-in state [:buttons "new-game"]))
+    (draw-button state "continue" (get-in state [:buttons "continue"])))
 
 (defn draw-score
   [state]
-  (Raylib/DrawText (str "score: " (:devoured state)) 100 150 20 Jaylib/YELLOW))
+  (Raylib/DrawText (str "score: " (:devoured state)) const/canvas-center
+                                                     (+ const/canvas-center const/unit-length)
+                                                     const/text-width Jaylib/YELLOW))
 
 (defn draw-pause
   [state]
   (draw-continue state)
-  (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
-  (Raylib/DrawText "pause" 120 130 20 Jaylib/LIGHTGRAY)
+  (Raylib/DrawRectangle 0 0 (:width const/main-window-scales)
+                            (:height const/main-window-scales) screen-semitransparent-color)
+  (Raylib/DrawText "pause" const/canvas-center
+                           const/canvas-center
+                           const/text-width Jaylib/LIGHTGRAY)
   (draw-score state)
-  (draw-menu-button))
+  (draw-button state "menu" (get-in state [:buttons "menu"])))
 
 (defn draw-over
   [state]
   (draw-continue state)
-  (Raylib/DrawRectangle 0 0 300 300 (Jaylib$Color. 60 50 150 100 ))
-  (Raylib/DrawText "game over" 100 130 20 Jaylib/LIGHTGRAY)
+  (Raylib/DrawRectangle 0 0 (:width const/main-window-scales)
+                            (:height const/main-window-scales) screen-semitransparent-color)
+  (Raylib/DrawText "game over" const/canvas-center
+                               const/canvas-center
+                               const/text-width Jaylib/LIGHTGRAY)
   (draw-score state)
-  (draw-menu-button))
-
-;; buttons
+  (draw-button state "menu" (get-in state [:buttons "menu"])))
