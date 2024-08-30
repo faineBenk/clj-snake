@@ -28,6 +28,8 @@
 
 (def button-height (* text-width 2))
 
+(def max-input-name (* unit-length 10))
+
 ;; based on text, generates value for setting Rectangle width
 (defn set-rectangle-dimensions
   [txt letter-width]
@@ -47,13 +49,20 @@
    :buttons {"menu" {:x unit-length :y (- (:height main-window-scales) 60)
                      :width (set-rectangle-dimensions "menu" 10)
                      :height button-height :hover false :states ["pause" "over"]}
-             "new-game" {:x (- canvas-center unit-length) :y (- canvas-center unit-length)
+             "input-name"
+                        {:x (- canvas-center unit-length) :y (- canvas-center unit-length)
+                         :width max-input-name
+                         :height button-height :hover false :states ["menu"]}
+             "new-game" {:x (- canvas-center unit-length) :y (+ canvas-center (* unit-length 2))
                          :width (set-rectangle-dimensions "new-game" 10)
                          :height button-height :hover false :states ["menu"]}
-             "continue" {:x (- canvas-center unit-length) :y (+ canvas-center (* unit-length 2))
+             "continue" {:x (- canvas-center unit-length) :y (+ canvas-center (* unit-length 4))
                          :width (set-rectangle-dimensions "continue" 10)
                          :height button-height :hover false :states ["menu"]}
-             }})
+                          }
+  :player {:player-name nil
+           :letter-count 0
+           :active false}})
    ;; :active-button {:b-name nil :x nil :y nil :hover false}})  ; start menu : "start"
                              ; game is played : "continue"
                              ; game is paused : "pause"
