@@ -44,7 +44,7 @@
    :snake-dir "right"         ; (head snake) direction
    :snake-body '([:right 4]) ; snake directions
    :border-offset {:start 5 :end 290}
-   :game-state "continue"
+   :game-state "menu"
    :frames 0
    :buttons {"menu" {:x unit-length :y (- (:height main-window-scales) 60)
                      :width (set-rectangle-dimensions "menu" 10)
@@ -60,9 +60,8 @@
                          :width (set-rectangle-dimensions "continue" 10)
                          :height button-height :hover false :states ["menu"]}
                           }
-  :player {:player-name nil
-           :letter-count 0
-           :active false}})
+  :input []
+  :player {:player-name nil :continue-input true}})
    ;; :active-button {:b-name nil :x nil :y nil :hover false}})  ; start menu : "start"
                              ; game is played : "continue"
                              ; game is paused : "pause"

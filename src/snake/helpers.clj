@@ -40,3 +40,6 @@
   [v]
   (filter #(not (zero? (second %))) v))
 
+(defn keycode-to-char
+  [kc]
+  (char (+ kc 32)))

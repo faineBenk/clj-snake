@@ -62,7 +62,6 @@
     (Raylib/DrawCircle (-> state :apple-posns :x) (-> state :apple-posns :y) 5 Jaylib/RED)
     (Raylib/DrawFPS 30, 30))
 
-
 (defn draw-button-text
   [b-name {x :x y :y}]
   (Raylib/DrawText b-name ;; offset from right side of Rectangle
@@ -73,8 +72,10 @@
                            Jaylib/LIGHTGRAY))
 
 (defn draw-letters-in-input
-  [state {x :x  y :y} {p-name :name l-count :letter-count}]
-  (draw-button-text "input-name" (get-in state [:buttons "input-name"])))
+  [state]
+  (let [char-seq (apply str (map h/keycode-to-char (:input state)))]
+  ;; (draw-button-text (get-in state [:player :player-name]) input-name-button)
+  (draw-button-text char-seq (get-in state [:buttons "input-name"]))))
 
 (defn draw-button
   [state b-name {x :x y :y width :width height :height}]
@@ -82,10 +83,10 @@
   (cond
     (= b-name "menu") (draw-button-text "menu" (get-in state [:buttons "menu"]))
     (= b-name "new-game") (draw-button-text "new game" (get-in state [:buttons "new-game"]))
-    (= b-name "continue") (draw-button-text "continue" (get-in state [:buttons "continue"]))
-    (= b-name "input-name") (let [b-input (get-in state [:buttons "input-name"])
-                                  player (:player state)]
-                              (when (k/button-area-active? b-input) (draw-letters-in-input state b-input player)))))
+    (= b-name "continue") (draw-button-text "play" (get-in state [:buttons "continue"]))
+    (= b-name "input-name") (let [b-input (get-in state [:buttons "input-name"]) player (:player state)]
+                                                    ;;(when (k/button-area-active? b-input)
+                                 (draw-letters-in-input state))))
 
 (defn draw-init-screen
   [state]
@@ -93,7 +94,8 @@
                               (:height const/main-window-scales) Jaylib/VIOLET)
     (draw-button state "new-game" (get-in state [:buttons "new-game"]))
     (draw-button state "continue" (get-in state [:buttons "continue"]))
-    (draw-button state "input-name" (get-in state [:buttons "input-name"])))
+    (when (get-in state [:player :continue-input])
+        (draw-button state "input-name" (get-in state [:buttons "input-name"]))))
 
 (defn draw-score
   [state]
