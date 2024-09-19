@@ -71,7 +71,3 @@
   :input []
   :player {:player-name nil :continue-input true}
   :score-sent false})
-   ;; :active-button {:b-name nil :x nil :y nil :hover false}})  ; start menu : "start"
-                             ; game is played : "continue"
-                             ; game is paused : "pause"
-                             ; game is over : "over"

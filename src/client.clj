@@ -17,5 +17,3 @@
   (let [response (client/get "http://localhost:8080/rating-table"
                               {:headers {"Content-Type" "application/json"}})]
     (json/parse-string (:body response) true)))
-
-(def sample-pl [{:player "player1", :score 229} {:player "player38", :score 227}])
