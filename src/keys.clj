@@ -11,14 +11,48 @@
         :else
         (recur (conj v new-key))))))
 
-;; fill only alphabetical
+(defn is-alphanumeric? [c]
+  (and (>= c 39) (<= c 96)))
+
+(defn seq-into-special-sym [fi si]
+  (cond
+    (= fi 340) (cond (= si 45) \_
+                     :else \!)
+    :else
+    1))
+
+;; 340 -- shift
+;; [65 68 340 45 66] -> [\a \d \_ \b]
+(defn tokenize [input output]
+  (loop [i input
+         o output]
+    (cond
+      (empty? i) o
+      (is-alphanumeric? (first i)) (recur (rest i) (conj o (char (first i))))
+      (= (first i) 340) (recur (vec (drop 2 i)) (conj o (seq-into-special-sym (first i) (second i))))
+      :else
+      o)))
+
+(tokenize [65 68 340 49 66] [])
+
+(vec (drop 2 [340 45 66]))
+
+;; check keycode validity with k. table
 (defn fill-with [input keys-happened]
   (loop [acc-input input
          left-keys keys-happened]
     (cond (empty? left-keys) acc-input
-          (= (first left-keys) 259) (fill-with (vec (butlast acc-input)) (rest left-keys))
+          ;; ESC
+          (= (first left-keys) 259) (recur (vec (butlast acc-input)) (rest left-keys))
+          ;;
+          (is-alphanumeric? (first left-keys)) (recur (conj acc-input (first left-keys)) (rest left-keys))
           :else
-          (recur (conj acc-input (first left-keys)) (rest left-keys)))))
+          left-keys)))
+
+; Current problems:
+; 1. Every key except for enter is considered as char, which is wrong. Chars you are interested in should be filtered using the keycode table
+; 2. Enter may happen in between of input, not only last
+; 3. For some reason punctuation marks is not handled correctly. While it's ok for !?* and etc, it is unacceptable for _. Thus it must be handled.
 
 (defn toggle-pause
   [state]
@@ -29,8 +63,12 @@
 
 (defn update-player-name
   [state]
-  (let [codepoints (map #(+ % 32) (:input state))]
-    (assoc-in state [:player :player-name] (apply str (map char codepoints)))))
+  (let [chars (tokenize (:input state))
+        player-name (apply str (map char chars))]
+    ;(println "codepoints: " codepoints)
+    ;(println "input: " (:input state))
+    ;(println "player name: " player-name)
+    (assoc-in state [:player :player-name] player-name)))
 
 (defn handle-keys
   [state]
@@ -38,14 +76,14 @@
         keys-happened (extract-keys-from-queue)]
     (cond
           (= game-state "menu")
-                (cond (and (not (= (last keys-happened) 257))
-                           (get-in state [:player :continue-input]))
-                    (let [state (update state :input (fn [input] (fill-with input keys-happened)))]
-                        (when (not (empty? keys-happened)) (println (str "this is in input" (:input state))))
-                        (update-player-name state))
-                    ;; when enter hit, player name sent to server
-                    :else
-                    (assoc-in state [:player :continue-input] false))
+              (cond (get-in state [:player :continue-input])
+                  (let [[keys-happened _] (partition keys-happened)
+                        enter-happened (contains keys-happened 257)
+                        state (update state :input (fn [input] (fill-with input keys-happened)))]
+                      (assoc-in (update-player-name state) [:player :continue-input] (not enter-happened)))
+                  ;; when enter hit, player name sent to server
+                  :else
+                  (assoc-in state [:player :continue-input] false))
       :else
       (let [last-key (last keys-happened)
             sd (:snake-body state)

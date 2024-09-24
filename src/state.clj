@@ -48,8 +48,8 @@
               new-state)
             (= current-state "menu")
             (do
-              (println "----------MENU----------")
-              (log/info "State in menu:" state)
+              ;(println "----------MENU----------")
+              ;(log/info "State in menu:" state)
               (assoc state :score-sent false))))
     state))
 

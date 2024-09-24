@@ -73,9 +73,11 @@
 
 (defn draw-letters-in-input
   [state]
-  (let [char-seq (apply str (map h/keycode-to-char (:input state)))]
+  (let [player-name (get-in state [:player :player-name])]
+    (println "input: "(:input state))
+    (println "player-name: " player-name)
   ;; (draw-button-text (get-in state [:player :player-name]) input-name-button)
-  (draw-button-text char-seq (get-in state [:buttons "input-name"]))))
+  (draw-button-text player-name (get-in state [:buttons "input-name"]))))
 
 (defn draw-button
   [state b-name {x :x y :y width :width height :height}]
